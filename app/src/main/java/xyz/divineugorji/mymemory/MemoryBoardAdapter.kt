@@ -16,6 +16,8 @@ import xyz.divineugorji.mymemory.models.BoardSize
 import xyz.divineugorji.mymemory.models.MemoryCard
 import kotlin.math.min
 
+
+
 class MemoryBoardAdapter(
         private val context: Context,
         private val boardSize: BoardSize,

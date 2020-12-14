@@ -1,7 +1,6 @@
 package xyz.divineugorji.mymemory
 
 import android.animation.ArgbEvaluator
-import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -17,12 +16,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener
 import com.google.android.material.snackbar.Snackbar
 import xyz.divineugorji.mymemory.models.BoardSize
-import xyz.divineugorji.mymemory.models.MemoryCard
 import xyz.divineugorji.mymemory.models.MemoryGame
-import xyz.divineugorji.mymemory.utils.DEFAULT_ICONS
 import xyz.divineugorji.mymemory.utils.EXTRA_BOARD_SIZE
 
 class MainActivity : AppCompatActivity() {
@@ -53,6 +49,10 @@ class MainActivity : AppCompatActivity() {
 
         tvNumMoves = findViewById(R.id.tvNumMoves)
         tvNumPairs = findViewById(R.id.tvNumPairs)
+
+        val intent = Intent(this, CreateActivity::class.java)
+        intent.putExtra(EXTRA_BOARD_SIZE, BoardSize.MEDIUM)
+        startActivity(intent)
 
         setUpBoard()
     }
