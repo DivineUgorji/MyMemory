@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "942033085738",
+    "project_id": "my-memory-443e4",
+    "storage_bucket": "my-memory-443e4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:942033085738:android:04be3cbd446031ba41aa53",
+        "android_client_info": {
+          "package_name": "xyz.divineugorji.mymemory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "942033085738-36bnrivuiv6kq76igcg2l1ofnuia0d31.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNOE1JOYEQcBMxjqAtzFtaLisaWjmRvto"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "942033085738-36bnrivuiv6kq76igcg2l1ofnuia0d31.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
