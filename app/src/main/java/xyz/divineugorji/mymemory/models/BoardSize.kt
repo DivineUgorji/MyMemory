@@ -3,7 +3,7 @@ package xyz.divineugorji.mymemory.models
 enum class BoardSize(val numCards: Int) {
 
     EASY (8),
-    MEDIUM(16),
+    MEDIUM(18),
     HARD(24);
 
     fun getWidth(): Int{

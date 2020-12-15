@@ -1,7 +1,9 @@
 package xyz.divineugorji.mymemory
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,8 +15,8 @@ import kotlin.math.min
 
 class ImagePickerAdapter(private val context: Context,
                          private val imageUris: List<Uri>,
-                         private val imageClickListener: BoardSize,
-                         private val boardSize: ImageClickListener):
+                         private val boardSize: BoardSize,
+                         private val imageClickListener: ImageClickListener):
         RecyclerView.Adapter<ImagePickerAdapter.ViewHolder>() {
 
 
@@ -24,11 +26,13 @@ class ImagePickerAdapter(private val context: Context,
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-       val view = LayoutInflater.from(context).inflate(R.layout.card_image, parent, false)
-        val cardWidth: Int = parent.width / boardSize.getWidth()
-        val cardHeight: Int = parent.height / boardSize.getHeight()
-        val cardSideLength: Int = min(cardWidth, cardHeight)
-        val layoutParams: ViewGroup.LayoutParams = view.findViewById<ImageView>(R.id.ivCustomImage).layoutParams
+        Log.i(TAG, "onCreateViewHolder")
+        val view = LayoutInflater.from(context).inflate(R.layout.card_image, parent, false)
+        val cardWidth = parent.width / boardSize.getWidth()
+        val cardHeight = parent.height / boardSize.getHeight()
+        val cardSideLength = min(cardWidth, cardHeight)
+        Log.i(TAG, "onCreateViewHolder $cardSideLength, $cardWidth, $cardHeight")
+        val layoutParams = view.findViewById<ImageView>(R.id.ivCustomImage).layoutParams
         layoutParams.width = cardSideLength
         layoutParams.height = cardSideLength
         return ViewHolder(view)
