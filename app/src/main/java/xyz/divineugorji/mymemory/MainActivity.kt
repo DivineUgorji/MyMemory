@@ -10,16 +10,19 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.squareup.picasso.Picasso
 import xyz.divineugorji.mymemory.models.BoardSize
 import xyz.divineugorji.mymemory.models.MemoryGame
 import xyz.divineugorji.mymemory.models.UserImageList
@@ -37,10 +40,9 @@ class MainActivity : AppCompatActivity() {
     private var gameName: String? = null
     private var customGameImages: List<String>? = null
     private var boardSize: BoardSize = BoardSize.EASY
-    private lateinit var clRoot: ConstraintLayout
+    private lateinit var clRoot: CoordinatorLayout
     private lateinit var rvBoard: RecyclerView
     private lateinit var tvNumMoves: TextView
-
 
 
     private lateinit var memoryGame: MemoryGame
@@ -86,6 +88,10 @@ class MainActivity : AppCompatActivity() {
                 showCreationDialog()
                 return true
             }
+            R.id.mi_download->{
+                showDownloadDialog()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -102,6 +108,16 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    private fun showDownloadDialog() {
+        val boardDownloadView = LayoutInflater.from(this).inflate(R.layout.dialog_download_board, null)
+        showAlertDialog("Fetch memory game", boardDownloadView, View.OnClickListener {
+            val etDownloadGame = boardDownloadView.findViewById<EditText>(R.id.etGameName)
+            val gameToDownload = etDownloadGame.text.toString().trim()
+            downloadGame(gameToDownload)
+        })
+
+    }
+
     private fun downloadGame(customGameName: String) {
         db.collection("games").document(customGameName).get().addOnSuccessListener { document ->
             val userImageList = document.toObject(UserImageList::class.java)
@@ -113,10 +129,12 @@ class MainActivity : AppCompatActivity() {
             val numCards = userImageList.images.size * 2
             boardSize = BoardSize.getByValue(numCards)
             customGameImages = userImageList.images
-            setUpBoard()
-            gameName = customGameName
+            for (imageUrl in userImageList.images){
+                Picasso.get().load(imageUrl).fetch()
+            }
             Snackbar.make(clRoot, "You're now playing '$customGameName'!", Snackbar.LENGTH_LONG).show()
-
+            gameName = customGameName
+            setUpBoard()
         }.addOnFailureListener { exception ->
             Log.e(TAG, "Exception when retrieving game", exception)
         }
@@ -145,6 +163,7 @@ class MainActivity : AppCompatActivity() {
             BoardSize.MEDIUM -> radioGroupSize.check(R.id.rMedium)
             BoardSize.HARD -> radioGroupSize.check(R.id.rHard)
         }
+
       showAlertDialog("Choose new size", boardSizeView, View.OnClickListener {
           boardSize = when(radioGroupSize.checkedRadioButtonId){
               R.id.rEasy -> BoardSize.EASY
@@ -199,7 +218,6 @@ class MainActivity : AppCompatActivity() {
         rvBoard.layoutManager = GridLayoutManager(this, boardSize.getWidth())
     }
 
-
     private fun updateGameWithFlip(position: Int) {
         if (memoryGame.haveWonGame()){
             //Alert the user of an invalid move
@@ -228,4 +246,5 @@ class MainActivity : AppCompatActivity() {
         tvNumMoves.text = "Moves: ${memoryGame.getNumMoves()}"
         adapter.notifyDataSetChanged()
     }
+
 }
