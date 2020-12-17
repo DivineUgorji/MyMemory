@@ -18,7 +18,6 @@ import xyz.divineugorji.mymemory.models.MemoryCard
 import kotlin.math.min
 
 
-
 class MemoryBoardAdapter(
         private val context: Context,
         private val boardSize: BoardSize,
@@ -69,7 +68,7 @@ class MemoryBoardAdapter(
                     imageButton.setImageResource(memoryCard.indentifier)
                 }
             }else{
-                imageButton.setImageResource(R.drawable.ic_launcher_background)
+                imageButton.setImageResource(R.drawable.mymemory)
 
             }
 

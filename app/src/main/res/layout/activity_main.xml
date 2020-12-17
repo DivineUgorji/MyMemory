@@ -17,7 +17,7 @@
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#FF9800"
+        android:background="#EC8454"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -29,12 +29,13 @@
             android:layout_margin="10dp"
             android:layout_weight="1"
             app:cardCornerRadius="8dp"
-            app:cardElevation="8dp">
+            app:cardElevation="20dp">
 
             <TextView
                 android:id="@+id/tvNumMoves"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:textColor="#272262"
                 android:layout_margin="10dp"
                 android:gravity="center"
                 android:padding="8dp"
@@ -49,12 +50,13 @@
             android:layout_margin="10dp"
             android:layout_weight="1"
             app:cardCornerRadius="8dp"
-            app:cardElevation="8dp">
+            app:cardElevation="12dp">
 
             <TextView
                 android:id="@+id/tvNumPairs"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:textColor="#272262"
                 android:layout_margin="10dp"
                 android:gravity="center"
                 android:padding="8dp"
