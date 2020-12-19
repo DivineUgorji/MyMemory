@@ -19,4 +19,9 @@
         android:id="@+id/mi_download"
         android:title="download custom game"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/media_sound"
+        android:icon="@drawable/ic_audiotrack"
+        android:title="Sound"
+        app:showAsAction="always" />
 </menu>

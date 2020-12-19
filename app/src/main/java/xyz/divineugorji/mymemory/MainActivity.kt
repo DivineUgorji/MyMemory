@@ -4,8 +4,9 @@ import android.animation.ArgbEvaluator
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
+import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -15,7 +16,7 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
@@ -30,13 +31,16 @@ import xyz.divineugorji.mymemory.models.MemoryGame
 import xyz.divineugorji.mymemory.models.UserImageList
 import xyz.divineugorji.mymemory.utils.EXTRA_BOARD_SIZE
 import xyz.divineugorji.mymemory.utils.EXTRA_GAME_NAME
+import java.text.DecimalFormat
+import java.text.NumberFormat
 
 class MainActivity : AppCompatActivity() {
 
-    companion object{
+    companion object {
         private const val TAG = "MainActivity"
         private const val CREATE_REQUEST_CODE = 248
     }
+
 
     private val db = Firebase.firestore
     private var gameName: String? = null
@@ -45,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var clRoot: CoordinatorLayout
     private lateinit var rvBoard: RecyclerView
     private lateinit var tvNumMoves: TextView
+    private lateinit var mSoundPlayer: MediaPlayer
 
 
     private lateinit var memoryGame: MemoryGame
@@ -56,6 +61,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        var textView: TextView? = null
+        textView = findViewById<TextView>(R.id.textView)
+
         clRoot = findViewById(R.id.clRoot)
         rvBoard = findViewById(R.id.rvBoard)
 
@@ -63,6 +71,25 @@ class MainActivity : AppCompatActivity() {
         tvNumPairs = findViewById(R.id.tvNumPairs)
 
         setUpBoard()
+        // Time is in millisecond so 50sec = 50000 I have used
+        // countdown Interveal is 1sec = 1000 I have used
+        // Time is in millisecond so 50sec = 50000 I have used
+        // countdown Interveal is 1sec = 1000 I have used
+        object : CountDownTimer(50000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                // Used for formatting digit to be in 2 digits only
+                val f: NumberFormat = DecimalFormat("00")
+                val hour = millisUntilFinished / 3600000 % 24
+                val min = millisUntilFinished / 60000 % 60
+                val sec = millisUntilFinished / 1000 % 60
+                textView!!.text = "Time remaining:" + f.format(hour) + ":" + f.format(min) + ":" + f.format(sec)
+            }
+
+            // When the task is over it will print 00:00:00 there
+            override fun onFinish() {
+                textView!!.text = "00:00:00"
+            }
+        }.start()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -71,26 +98,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId){
-            R.id.mi_refresh ->{
-                if (memoryGame.getNumMoves() > 0 && !memoryGame.haveWonGame()){
+        when (item.itemId) {
+            R.id.mi_refresh -> {
+                if (memoryGame.getNumMoves() > 0 && !memoryGame.haveWonGame()) {
                     showAlertDialog("Quit current game level?", null, View.OnClickListener {
                         setUpBoard()
                     })
-                }else{
+                } else {
                     setUpBoard()
                 }
                 return true
             }
-            R.id.mi_new_size ->{
+            R.id.mi_new_size -> {
                 showSizeDialog()
                 return true
             }
-            R.id.mi_custom ->{
+            R.id.mi_custom -> {
                 showCreationDialog()
                 return true
             }
-            R.id.mi_download->{
+            R.id.mi_download -> {
                 showDownloadDialog()
                 return true
             }
@@ -123,7 +150,7 @@ class MainActivity : AppCompatActivity() {
     private fun downloadGame(customGameName: String) {
         db.collection("games").document(customGameName).get().addOnSuccessListener { document ->
             val userImageList = document.toObject(UserImageList::class.java)
-            if (userImageList?.images == null)   {
+            if (userImageList?.images == null) {
                 Log.e(TAG, "Invalid custom game data from Firebase")
                 Snackbar.make(clRoot, "Sorry, we couldn't find any such game, " + "'$customGameName'", Snackbar.LENGTH_LONG).show()
                 return@addOnSuccessListener
@@ -131,7 +158,7 @@ class MainActivity : AppCompatActivity() {
             val numCards = userImageList.images.size * 2
             boardSize = BoardSize.getByValue(numCards)
             customGameImages = userImageList.images
-            for (imageUrl in userImageList.images){
+            for (imageUrl in userImageList.images) {
                 Picasso.get().load(imageUrl).fetch()
             }
             Snackbar.make(clRoot, "You're now playing '$customGameName'!", Snackbar.LENGTH_LONG).show()
@@ -160,22 +187,22 @@ class MainActivity : AppCompatActivity() {
     private fun showSizeDialog() {
         val boardSizeView = LayoutInflater.from(this).inflate(R.layout.dialog_board_size, null)
         val radioGroupSize: RadioGroup = boardSizeView.findViewById<RadioGroup>(R.id.radioGroup)
-        when(boardSize){
+        when (boardSize) {
             BoardSize.EASY -> radioGroupSize.check(R.id.rEasy)
             BoardSize.MEDIUM -> radioGroupSize.check(R.id.rMedium)
             BoardSize.HARD -> radioGroupSize.check(R.id.rHard)
         }
 
-      showAlertDialog("Choose new size", boardSizeView, View.OnClickListener {
-          boardSize = when(radioGroupSize.checkedRadioButtonId){
-              R.id.rEasy -> BoardSize.EASY
-              R.id.rMedium -> BoardSize.MEDIUM
-             else -> BoardSize.HARD
-          }
-          gameName = null
-          customGameImages = null
-          setUpBoard()
-      })
+        showAlertDialog("Choose new size", boardSizeView, View.OnClickListener {
+            boardSize = when (radioGroupSize.checkedRadioButtonId) {
+                R.id.rEasy -> BoardSize.EASY
+                R.id.rMedium -> BoardSize.MEDIUM
+                else -> BoardSize.HARD
+            }
+            gameName = null
+            customGameImages = null
+            setUpBoard()
+        })
     }
 
     private fun showAlertDialog(title: String, view: View?, positiveButtonClickListener: View.OnClickListener) {
@@ -183,14 +210,15 @@ class MainActivity : AppCompatActivity() {
                 .setTitle(title)
                 .setView(view)
                 .setNegativeButton("Cancel", null)
-                .setPositiveButton("Ok"){_, _ ->
+                .setPositiveButton("Ok") { _, _ ->
                     positiveButtonClickListener.onClick(null)
                 }.show()
     }
 
-    private fun setUpBoard(){
+    private fun setUpBoard() {
         supportActionBar?.title = gameName ?: getString(R.string.app_name)
-        when(boardSize){
+        playGameSound()
+        when (boardSize) {
             BoardSize.EASY -> {
                 tvNumMoves.text = "Easy: 4 * 2"
                 tvNumPairs.text = "Pairs: 0 / 4"
@@ -207,7 +235,7 @@ class MainActivity : AppCompatActivity() {
         }
         tvNumPairs.setTextColor(ContextCompat.getColor(this, R.color.color_progress_none))
         memoryGame = MemoryGame(boardSize, customGameImages)
-        adapter = MemoryBoardAdapter(this, boardSize, memoryGame.cards, object : MemoryBoardAdapter.CardClickListener{
+        adapter = MemoryBoardAdapter(this, boardSize, memoryGame.cards, object : MemoryBoardAdapter.CardClickListener {
             override fun onCardClicked(position: Int) {
                 Log.i(TAG, "card clicked $position")
                 updateGameWithFlip(position)
@@ -220,19 +248,37 @@ class MainActivity : AppCompatActivity() {
         rvBoard.layoutManager = GridLayoutManager(this, boardSize.getWidth())
     }
 
+    private fun playGameSound() {
+        mSoundPlayer = MediaPlayer.create(this, R.raw.game_music)
+        mSoundPlayer.start()
+    }
+
+
+    private fun playGameOverSound() {
+        mSoundPlayer = MediaPlayer.create(this, R.raw.game_over)
+        mSoundPlayer.start()
+    }
+
+
+    private fun stopAudio() {
+        if (mSoundPlayer != null || mSoundPlayer.isPlaying)
+            mSoundPlayer.stop()
+            mSoundPlayer.release()
+    }
+
     private fun updateGameWithFlip(position: Int) {
-        if (memoryGame.haveWonGame()){
+        if (memoryGame.haveWonGame()) {
             //Alert the user of an invalid move
             Snackbar.make(clRoot, "You already won!", Snackbar.LENGTH_LONG).show()
             return
         }
-        if (memoryGame.isCardFacedUp(position)){
+        if (memoryGame.isCardFacedUp(position)) {
             //Alert the user of an invalid move
             Snackbar.make(clRoot, "Invalid move!", Snackbar.LENGTH_SHORT).show()
             return
         }
 
-        if (memoryGame.flipCard(position)){
+        if (memoryGame.flipCard(position)) {
             Log.i(TAG, "Found a match! Num pairs found &{memoryGame.numPairsFound}")
             val color = ArgbEvaluator().evaluate(
                     memoryGame.numPairsFound.toFloat() / boardSize.getNumPairs(),
@@ -243,11 +289,38 @@ class MainActivity : AppCompatActivity() {
             tvNumPairs.text = "Pairs: ${memoryGame.numPairsFound} / ${boardSize.getNumPairs()}"
             if (memoryGame.haveWonGame()) {
                 Snackbar.make(clRoot, "You won! Congratulations.", Snackbar.LENGTH_LONG).show()
+                playSound()
                 CommonConfetti.rainingConfetti(clRoot, intArrayOf(Color.YELLOW, Color.GREEN, Color.MAGENTA)).oneShot()
+                stopAudio()
+                object : CountDownTimer(50000, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                    /*    // Used for formatting digit to be in 2 digits only
+                        val f: NumberFormat = DecimalFormat("00")
+                        val hour = millisUntilFinished / 3600000 % 24
+                        val min = millisUntilFinished / 60000 % 60
+                        val sec = millisUntilFinished / 1000 % 60
+                        textView!!.text = "Time remaining:" + f.format(hour) + ":" + f.format(min) + ":" + f.format(sec)*/
+                        cancel()
+                    }
+
+                    // When the task is over it will print 00:00:00 there
+                    override fun onFinish() {
+                       // textView!!.text = "00:00:00"
+                    }
+                }.cancel()
+
             }
         }
         tvNumMoves.text = "Moves: ${memoryGame.getNumMoves()}"
         adapter.notifyDataSetChanged()
     }
 
+    private fun playSound() {
+        val mPlayer: MediaPlayer = MediaPlayer.create(this, R.raw.party_sound)
+        mPlayer.start()
+    }
+
+
+
 }
+
