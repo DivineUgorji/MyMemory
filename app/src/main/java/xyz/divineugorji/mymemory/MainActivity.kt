@@ -41,7 +41,8 @@ class MainActivity : AppCompatActivity() {
         private const val CREATE_REQUEST_CODE = 248
     }
 
-
+    private var timer: CountDownTimer? = null
+    private var mSoundPlayer: MediaPlayer? = null
     private val db = Firebase.firestore
     private var gameName: String? = null
     private var customGameImages: List<String>? = null
@@ -49,7 +50,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var clRoot: CoordinatorLayout
     private lateinit var rvBoard: RecyclerView
     private lateinit var tvNumMoves: TextView
-    private lateinit var mSoundPlayer: MediaPlayer
 
 
     private lateinit var memoryGame: MemoryGame
@@ -71,25 +71,7 @@ class MainActivity : AppCompatActivity() {
         tvNumPairs = findViewById(R.id.tvNumPairs)
 
         setUpBoard()
-        // Time is in millisecond so 50sec = 50000 I have used
-        // countdown Interveal is 1sec = 1000 I have used
-        // Time is in millisecond so 50sec = 50000 I have used
-        // countdown Interveal is 1sec = 1000 I have used
-        object : CountDownTimer(50000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                // Used for formatting digit to be in 2 digits only
-                val f: NumberFormat = DecimalFormat("00")
-                val hour = millisUntilFinished / 3600000 % 24
-                val min = millisUntilFinished / 60000 % 60
-                val sec = millisUntilFinished / 1000 % 60
-                textView!!.text = "Time remaining:" + f.format(hour) + ":" + f.format(min) + ":" + f.format(sec)
-            }
 
-            // When the task is over it will print 00:00:00 there
-            override fun onFinish() {
-                textView!!.text = "00:00:00"
-            }
-        }.start()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -102,9 +84,13 @@ class MainActivity : AppCompatActivity() {
             R.id.mi_refresh -> {
                 if (memoryGame.getNumMoves() > 0 && !memoryGame.haveWonGame()) {
                     showAlertDialog("Quit current game level?", null, View.OnClickListener {
+                        mSoundPlayer?.stop()
+                        stopTimer()
                         setUpBoard()
                     })
                 } else {
+                    mSoundPlayer?.stop()
+                    stopTimer()
                     setUpBoard()
                 }
                 return true
@@ -138,6 +124,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDownloadDialog() {
+        stopTimer()
+        mSoundPlayer?.stop()
         val boardDownloadView = LayoutInflater.from(this).inflate(R.layout.dialog_download_board, null)
         showAlertDialog("Fetch memory game", boardDownloadView, View.OnClickListener {
             val etDownloadGame = boardDownloadView.findViewById<EditText>(R.id.etGameName)
@@ -170,6 +158,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showCreationDialog() {
+        mSoundPlayer?.stop()
+        stopTimer()
         val boardSizeView = LayoutInflater.from(this).inflate(R.layout.dialog_board_size, null)
         val radioGroupSize = boardSizeView.findViewById<RadioGroup>(R.id.radioGroup)
         showAlertDialog("Create your own memory board", boardSizeView, View.OnClickListener {
@@ -201,6 +191,8 @@ class MainActivity : AppCompatActivity() {
             }
             gameName = null
             customGameImages = null
+            stopTimer()
+            mSoundPlayer?.stop()
             setUpBoard()
         })
     }
@@ -217,7 +209,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUpBoard() {
         supportActionBar?.title = gameName ?: getString(R.string.app_name)
-        playGameSound()
+        playGameOnSound()
+        myCounter()
         when (boardSize) {
             BoardSize.EASY -> {
                 tvNumMoves.text = "Easy: 4 * 2"
@@ -242,28 +235,19 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-
         rvBoard.adapter = adapter
         rvBoard.setHasFixedSize(true)
         rvBoard.layoutManager = GridLayoutManager(this, boardSize.getWidth())
     }
 
-    private fun playGameSound() {
+    private fun playGameOnSound() {
         mSoundPlayer = MediaPlayer.create(this, R.raw.game_music)
-        mSoundPlayer.start()
+        mSoundPlayer?.start()
     }
-
 
     private fun playGameOverSound() {
         mSoundPlayer = MediaPlayer.create(this, R.raw.game_over)
-        mSoundPlayer.start()
-    }
-
-
-    private fun stopAudio() {
-        if (mSoundPlayer != null || mSoundPlayer.isPlaying)
-            mSoundPlayer.stop()
-            mSoundPlayer.release()
+        mSoundPlayer?.start()
     }
 
     private fun updateGameWithFlip(position: Int) {
@@ -289,25 +273,10 @@ class MainActivity : AppCompatActivity() {
             tvNumPairs.text = "Pairs: ${memoryGame.numPairsFound} / ${boardSize.getNumPairs()}"
             if (memoryGame.haveWonGame()) {
                 Snackbar.make(clRoot, "You won! Congratulations.", Snackbar.LENGTH_LONG).show()
-                playSound()
+                stopTimer()
+                playWonGameSound()
                 CommonConfetti.rainingConfetti(clRoot, intArrayOf(Color.YELLOW, Color.GREEN, Color.MAGENTA)).oneShot()
-                stopAudio()
-                object : CountDownTimer(50000, 1000) {
-                    override fun onTick(millisUntilFinished: Long) {
-                    /*    // Used for formatting digit to be in 2 digits only
-                        val f: NumberFormat = DecimalFormat("00")
-                        val hour = millisUntilFinished / 3600000 % 24
-                        val min = millisUntilFinished / 60000 % 60
-                        val sec = millisUntilFinished / 1000 % 60
-                        textView!!.text = "Time remaining:" + f.format(hour) + ":" + f.format(min) + ":" + f.format(sec)*/
-                        cancel()
-                    }
-
-                    // When the task is over it will print 00:00:00 there
-                    override fun onFinish() {
-                       // textView!!.text = "00:00:00"
-                    }
-                }.cancel()
+               mSoundPlayer?.stop()
 
             }
         }
@@ -315,12 +284,59 @@ class MainActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
-    private fun playSound() {
+    private fun playWonGameSound() {
         val mPlayer: MediaPlayer = MediaPlayer.create(this, R.raw.party_sound)
         mPlayer.start()
     }
 
+    fun myCounter() {
+        var textView: TextView? = null
+        textView = findViewById<TextView>(R.id.textView)
+        // Time is in millisecond so 50sec = 50000 I have used
+        // countdown Interveal is 1sec = 1000 I have used
+        timer = object : CountDownTimer(40000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                // Used for formatting digit to be in 2 digits only
+                val f: NumberFormat = DecimalFormat("00")
+                val hour = millisUntilFinished / 3600000 % 24
+                val min = millisUntilFinished / 60000 % 60
+                val sec = millisUntilFinished / 1000 % 60
+                textView.setText("Time remaining:" + f.format(hour) + ":" + f.format(min) + ":" + f.format(sec))
+            }
 
+            // When the task is over it will print 00:00:00 there
+            override fun onFinish() {
+                if (!memoryGame.haveWonGame()){
+                    mSoundPlayer?.stop()
+                    textView.setText("00:00:00")
+                    playGameOverSound()
+                    showGameOverDialog("Game Over", null, View.OnClickListener {
+                        setUpBoard()
+                    })
+
+                }
+            }
+        }.start()
+    }
+
+    private fun showGameOverDialog(title: String, view: View?, positiveButtonClickListener: View.OnClickListener) {
+        AlertDialog.Builder(this)
+                .setTitle(title)
+                .setView(view)
+                .setNegativeButton("Quit Game"){ _,_ ->
+                    finish()
+                }
+                .setPositiveButton("Play again"){_, _ ->
+                    positiveButtonClickListener.onClick(null)
+                }.show()
+    }
+
+    private fun stopTimer(){
+        var textView: TextView? = null
+        textView = findViewById<TextView>(R.id.textView)
+        timer?.cancel()
+        textView.setText("00:00:00")
+    }
 
 }
 
