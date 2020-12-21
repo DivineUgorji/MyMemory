@@ -30,3 +30,7 @@ and then share your personalized game with other friends/family who have the app
 - ✩ User authentication
 - ✩ Discovery of boards created by others
 
+Solarized dark             |  Solarized Ocean
+:-------------------------:|:-------------------------:
+![](https://...Dark.png)  |  ![](https://...Ocean.png)
+
