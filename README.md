@@ -19,7 +19,7 @@ and then share your personalized game with other friends/family who have the app
 - Easily track the number of moves you’ve made and the number of pairs you’ve found.
 
 # Added Features
-- Added more game board sizes(Togh: 6 x 5 and Hero: 6 x 6 )
+- Added more game board sizes(Togh:6 x 5 and Hero:6 x 6)
 - Timer to make the game more competitive and exciting(the player loses, if all cards are not matched before time is up)
 - Sound effects when player loses or wins
 - Quit or play game again, when player loses or wins
