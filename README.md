@@ -6,8 +6,6 @@ It’s fun for all ages and a great way to exercise your brain and improve your 
 My Memory is a customizable memory game, 100% free and open-source. Play one of the pre-defined games, 
 or play a custom game created by you or a friend! You can create your own memory game by choosing photos from your phone.
 
-//This app was originally built by [Rahul Pandey](https://github.com/rpandey1234/MyMemory), with a challenge to customize and add features for a reward of $25 //Google store publishers account.
-
 <img src="https://github.com/codesuperstarr/MyMemory/blob/master/memorymedia/memgame snapshots.png">
 
 # Features:
