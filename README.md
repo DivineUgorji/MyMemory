@@ -8,6 +8,8 @@ or play a custom game created by you or a friend! You can create your own memory
 
 This app was originally built by [Rahul Pandey](https://github.com/rpandey1234/MyMemory), with a challenge to customize and add features for a reward of $25 Google store publishers account.
 
+<img src="https://github.com/codesuperstarr/MyMemory/blob/master/memory snapshots.png" width="336" align="right" hspace="20">
+
 # Features:
 
 <img src="https://github.com/codesuperstarr/MyMemory/blob/master/memory-game-demo.gif" width="336" align="right" hspace="20">
